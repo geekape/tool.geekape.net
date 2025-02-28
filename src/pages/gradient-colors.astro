@@ -1,0 +1,155 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const gradients = [
+  // 紫色系
+  { name: '紫色梦幻', from: '#A531DC', to: '#4300B1', css: 'background: linear-gradient(45deg, #A531DC, #4300B1);' },
+  { name: '紫罗兰夜', from: '#A8C0FF', to: '#8E54E9', css: 'background: linear-gradient(45deg, #A8C0FF, #8E54E9);' },
+  { name: '薰衣草雾', from: '#B57EDC', to: '#8A2BE2', css: 'background: linear-gradient(45deg, #B57EDC, #8A2BE2);' },
+  { name: '葡萄紫韵', from: '#6F2DBD', to: '#4B0082', css: 'background: linear-gradient(45deg, #6F2DBD, #4B0082);' },
+
+  // 红色系
+  { name: '绯红夕阳', from: '#FF896D', to: '#D02020', css: 'background: linear-gradient(45deg, #FF896D, #D02020);' },
+  { name: '玫瑰烈焰', from: '#FF3366', to: '#CC0033', css: 'background: linear-gradient(45deg, #FF3366, #CC0033);' },
+  { name: '珊瑚橙红', from: '#FF7F50', to: '#FF4500', css: 'background: linear-gradient(45deg, #FF7F50, #FF4500);' },
+  { name: '酒红魅影', from: '#800020', to: '#4A0000', css: 'background: linear-gradient(45deg, #800020, #4A0000);' },
+
+  // 蓝色系
+  { name: '深海蓝调', from: '#3793FF', to: '#0017E4', css: 'background: linear-gradient(45deg, #3793FF, #0017E4);' },
+  { name: '天蓝海洋', from: '#00C6FF', to: '#0072FF', css: 'background: linear-gradient(45deg, #00C6FF, #0072FF);' },
+  { name: '湖水蓝调', from: '#0ACFFE', to: '#495AFF', css: 'background: linear-gradient(45deg, #0ACFFE, #495AFF);' },
+  { name: '午夜深蓝', from: '#000080', to: '#00008B', css: 'background: linear-gradient(45deg, #000080, #00008B);' },
+
+  // 绿色系
+  { name: '清新绿意', from: '#43E97B', to: '#38F9D7', css: 'background: linear-gradient(45deg, #43E97B, #38F9D7);' },
+  { name: '青草绿野', from: '#96FBC4', to: '#F9F586', css: 'background: linear-gradient(45deg, #96FBC4, #F9F586);' },
+  { name: '森林绿意', from: '#228B22', to: '#006400', css: 'background: linear-gradient(45deg, #228B22, #006400);' },
+  { name: '薄荷清凉', from: '#98FF98', to: '#00FA9A', css: 'background: linear-gradient(45deg, #98FF98, #00FA9A);' },
+
+  // 黄色/橙色系
+  { name: '金黄暖阳', from: '#FFD439', to: '#FF7A00', css: 'background: linear-gradient(45deg, #FFD439, #FF7A00);' },
+  { name: '暖阳橘光', from: '#FFB347', to: '#FFCC33', css: 'background: linear-gradient(45deg, #FFB347, #FFCC33);' },
+  { name: '柠檬晨曦', from: '#FFF44F', to: '#FFD700', css: 'background: linear-gradient(45deg, #FFF44F, #FFD700);' },
+  { name: '琥珀黄昏', from: '#FF7E00', to: '#FFD300', css: 'background: linear-gradient(45deg, #FF7E00, #FFD300);' },
+
+  // 粉色系
+  { name: '粉嫩樱花', from: '#FF9A9E', to: '#FAD0C4', css: 'background: linear-gradient(45deg, #FF9A9E, #FAD0C4);' },
+  { name: '玫瑰金', from: '#F6CEEC', to: '#D939CD', css: 'background: linear-gradient(45deg, #F6CEEC, #D939CD);' },
+  { name: '蜜桃甜心', from: '#FFB6C1', to: '#FF69B4', css: 'background: linear-gradient(45deg, #FFB6C1, #FF69B4);' },
+  { name: '紫霞仙子', from: '#E0B0FF', to: '#DA70D6', css: 'background: linear-gradient(45deg, #E0B0FF, #DA70D6);' },
+
+  // 中性色系
+  { name: '深邃夜空', from: '#434343', to: '#000000', css: 'background: linear-gradient(45deg, #434343, #000000);' },
+  { name: '银灰未来', from: '#C0C0C0', to: '#808080', css: 'background: linear-gradient(45deg, #C0C0C0, #808080);' },
+  { name: '暖沙米白', from: '#F5DEB3', to: '#FFF8DC', css: 'background: linear-gradient(45deg, #F5DEB3, #FFF8DC);' },
+  { name: '石墨灰阶', from: '#696969', to: '#2F4F4F', css: 'background: linear-gradient(45deg, #696969, #2F4F4F);' },
+
+  // 特殊效果
+  { name: '晨曦微光', from: '#FFF3B0', to: '#CA26FF', css: 'background: linear-gradient(45deg, #FFF3B0, #CA26FF);' },
+  { name: '霓虹幻彩', from: '#FF00FF', to: '#00FFFF', css: 'background: linear-gradient(45deg, #FF00FF, #00FFFF);' },
+  { name: '极光绿影', from: '#7FFF00', to: '#00FF7F', css: 'background: linear-gradient(45deg, #7FFF00, #00FF7F);' },
+  { name: '金属铜色', from: '#B87333', to: '#CD7F32', css: 'background: linear-gradient(45deg, #B87333, #CD7F32);' },
+
+  // 新增色系
+  { name: '海洋之心', from: '#40E0D0', to: '#4682B4', css: 'background: linear-gradient(45deg, #40E0D0, #4682B4);' },
+  { name: '日落余晖', from: '#FF6B6B', to: '#FFE66D', css: 'background: linear-gradient(45deg, #FF6B6B, #FFE66D);' },
+  { name: '翡翠碧玉', from: '#00C9A7', to: '#005B4A', css: 'background: linear-gradient(45deg, #00C9A7, #005B4A);' },
+  { name: '焦糖玛奇朵', from: '#D2691E', to: '#8B4513', css: 'background: linear-gradient(45deg, #D2691E, #8B4513);' },
+  { name: '银河星光', from: '#1A1A2E', to: '#16213E', css: 'background: linear-gradient(45deg, #1A1A2E, #16213E);' },
+  { name: '粉蓝梦境', from: '#89CFF0', to: '#F4C2C2', css: 'background: linear-gradient(45deg, #89CFF0, #F4C2C2);' },
+  { name: '秋日枫叶', from: '#FF6F61', to: '#C23B22', css: 'background: linear-gradient(45deg, #FF6F61, #C23B22);' },
+  { name: '孔雀蓝绿', from: '#009B95', to: '#004D46', css: 'background: linear-gradient(45deg, #009B95, #004D46);' },
+  { name: '薰衣草黄昏', from: '#E6E6FA', to: '#9370DB', css: 'background: linear-gradient(45deg, #E6E6FA, #9370DB);' },
+  { name: '巧克力布朗尼', from: '#6B4423', to: '#3E2723', css: 'background: linear-gradient(45deg, #6B4423, #3E2723);' },
+  { name: '冰霜雪国', from: '#F0FFFF', to: '#B0E0E6', css: 'background: linear-gradient(45deg, #F0FFFF, #B0E0E6);' },
+  { name: '热带雨林', from: '#3CB371', to: '#2E8B57', css: 'background: linear-gradient(45deg, #3CB371, #2E8B57);' },
+  { name: '紫金王朝', from: '#4B0082', to: '#FFD700', css: 'background: linear-gradient(45deg, #4B0082, #FFD700);' },
+  { name: '珊瑚浅海', from: '#FF7F50', to: '#20B2AA', css: 'background: linear-gradient(45deg, #FF7F50, #20B2AA);' },
+  { name: '暮光之城', from: '#2C3E50', to: '#FD746C', css: 'background: linear-gradient(45deg, #2C3E50, #FD746C);' },
+  { name: '青柠苏打', from: '#00FF00', to: '#7FFF00', css: 'background: linear-gradient(45deg, #00FF00, #7FFF00);' }
+];
+---
+
+<Layout title="精选渐变背景色 CSS 代码合集">
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-center mb-8">精选渐变背景色 CSS 代码合集</h1>
+    <p class="text-gray-600 text-center mb-12">
+      精选48种线性渐变色，可作为任何数字艺术作品的内容背景使用，一键复制 CSS 代码。
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {gradients.map(gradient => (
+        <div class="relative group">
+          <div
+            class="h-64 rounded-lg shadow-lg cursor-pointer transition-transform duration-300 group-hover:scale-105 hover:shadow-xl"
+            style={gradient.css}
+          >
+            <div class="absolute top-4 left-4 flex space-x-1.5">
+              <span class="w-4 h-4 rounded-full border-2 border-white/30 shadow-md transition-transform hover:scale-125" style={`background:${gradient.from}`} />
+              <span class="w-4 h-4 rounded-full border-2 border-white/30 shadow-md transition-transform hover:scale-125" style={`background:${gradient.to}`} />
+            </div>
+            
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white bg-black/10 hover:bg-black/5 transition-colors">
+              <h3 class="text-xl font-semibold mb-2 text-shadow">{gradient.name}</h3>
+              <div class="flex space-x-2 text-sm opacity-80 font-mono bg-white/10 px-3 py-1 rounded-full">
+                <span>{gradient.from}</span>
+                <span>→</span>
+                <span>{gradient.to}</span>
+              </div>
+            </div>
+            
+            <button
+              class="absolute top-4 right-4 bg-white/20 hover:bg-white/30 rounded-lg p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-sm"
+              data-css={gradient.css}
+              title="复制CSS代码"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('click', async (e) => {
+      if (e.target.closest('button[data-css]')) {
+        const css = e.target.closest('button').dataset.css;
+        try {
+          await navigator.clipboard.writeText(css);
+          showToast('✅ 复制成功！');
+        } catch {
+          showToast('❌ 复制失败，请手动复制');
+        }
+      }
+    });
+
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'fixed bottom-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full text-sm shadow-lg animate-fade-in-up';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.remove();
+      }, 2000);
+    }
+  </script>
+</Layout>
+
+<style>
+.text-shadow {
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.3s ease-out;
+}
+</style> 

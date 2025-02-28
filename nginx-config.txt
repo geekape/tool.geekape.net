@@ -1,0 +1,22 @@
+server {
+    listen 80;
+    server_name your-domain.com;  # 替换为你的域名
+
+    root /var/www/geek-tool;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # 缓存静态资源
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+        expires 30d;
+        add_header Cache-Control "public, no-transform";
+    }
+
+    # 安全相关配置
+    add_header X-Content-Type-Options nosniff;
+    add_header X-Frame-Options SAMEORIGIN;
+    add_header X-XSS-Protection "1; mode=block";
+} 

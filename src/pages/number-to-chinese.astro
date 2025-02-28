@@ -1,0 +1,178 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="数字转大写 - Online Tools">
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-6">数字转大写</h1>
+    
+    <div class="space-y-6">
+      <!-- 输入区域 -->
+      <div class="w-full">
+        <label for="input" class="block text-sm font-medium text-gray-700 mb-2">阿拉伯数字:</label>
+        <input
+          type="text"
+          id="input"
+          class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="请输入数字（最大支持16位数）"
+        />
+      </div>
+
+      <!-- 选项区域 -->
+      <div class="flex items-center space-x-4">
+        <label class="flex items-center space-x-2">
+          <input type="checkbox" id="moneyFormat" class="rounded text-blue-500 focus:ring-blue-500">
+          <span class="text-sm text-gray-600">使用"圆"代替"元"</span>
+        </label>
+      </div>
+
+      <!-- 按钮区域 -->
+      <div class="flex gap-2">
+        <button
+          id="convertBtn"
+          class="px-4 py-2 bg-blue-500 text-white hover:bg-blue-600 rounded-lg transition-colors"
+        >
+          转换
+        </button>
+        <button
+          id="clearBtn"
+          class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+        >
+          清空
+        </button>
+      </div>
+
+      <!-- 结果显示 -->
+      <div class="bg-gray-50 rounded-lg p-6">
+        <h2 class="text-lg font-semibold mb-4">转换结果</h2>
+        <div id="result" class="text-lg break-all"></div>
+      </div>
+
+      <!-- 说明文档 -->
+      <div class="bg-gray-50 rounded-lg p-6">
+        <h2 class="text-lg font-semibold mb-4">使用说明</h2>
+        <ul class="list-disc list-inside space-y-2 text-gray-600">
+          <li>中文数位规范：个、十、百、千、万、亿、兆（1兆=1亿亿）</li>
+          <li>数字读法规则：
+            <ul class="list-[circle] list-inside pl-4 mt-1">
+              <li>10-19开头读作"十"（如十五/十万）</li>
+              <li>中部出现的10-19读作"一十"（如二百一十）</li>
+              <li>"二"用于十位（二十），"两"用于亿/万/千/百（两千）</li>
+            </ul>
+          </li>
+          <li>零的用法：
+            <ul class="list-[circle] list-inside pl-4 mt-1">
+              <li>连续多个0只读一个零（两千零一十四）</li>
+              <li>万/亿位后的零必须读出（两万零一十）</li>
+              <li>编号空位用〇，数字用零</li>
+            </ul>
+          </li>
+          <li>货币单位：可选"圆"或"元"（壹圆整 / 壹元整）</li>
+        </ul>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  const input = document.getElementById('input') as HTMLInputElement;
+  const result = document.getElementById('result');
+  const convertBtn = document.getElementById('convertBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const moneyFormat = document.getElementById('moneyFormat') as HTMLInputElement;
+
+  const chineseNums = ['零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖'];
+  const units = ['', '拾', '佰', '仟', '万', '拾', '佰', '仟', '亿', '拾', '佰', '仟', '万', '拾', '佰', '仟'];
+
+  function convertToChinese(num: string): string {
+    // 处理非法输入
+    if (!/^\d+(\.\d{1,2})?$/.test(num)) {
+      return '请输入正确的数字格式';
+    }
+
+    const [integer, decimal] = num.split('.');
+    if (integer.length > 16) {
+      return '数字太大，最多支持16位整数';
+    }
+
+    let result = '';
+    
+    // 处理整数部分
+    if (integer === '0') {
+      result = '零';
+    } else {
+      for (let i = 0; i < integer.length; i++) {
+        const digit = parseInt(integer[i]);
+        const unit = units[integer.length - 1 - i];
+        
+        if (digit === 0) {
+          if (i === integer.length - 1) continue;
+          if (result.endsWith('零')) continue;
+          if (unit === '万' || unit === '亿') {
+            result += unit;
+            continue;
+          }
+          result += '零';
+        } else {
+          result += chineseNums[digit] + unit;
+        }
+      }
+    }
+
+    // 添加货币单位
+    result += moneyFormat.checked ? '圆' : '元';
+
+    // 处理小数部分
+    if (decimal) {
+      const jiao = parseInt(decimal[0]);
+      const fen = parseInt(decimal[1] || '0');
+
+      if (jiao === 0 && fen === 0) {
+        result += '整';
+      } else {
+        if (jiao !== 0) {
+          result += chineseNums[jiao] + '角';
+        }
+        if (fen !== 0) {
+          result += chineseNums[fen] + '分';
+        }
+      }
+    } else {
+      result += '整';
+    }
+
+    return result;
+  }
+
+  function updateResult() {
+    const value = input.value.trim();
+    if (!value) {
+      result.textContent = '';
+      return;
+    }
+    result.textContent = convertToChinese(value);
+  }
+
+  convertBtn.addEventListener('click', updateResult);
+  moneyFormat.addEventListener('change', updateResult);
+  
+  clearBtn.addEventListener('click', () => {
+    input.value = '';
+    result.textContent = '';
+  });
+
+  // 限制输入内容为数字和小数点
+  input.addEventListener('input', (e) => {
+    const target = e.target as HTMLInputElement;
+    target.value = target.value.replace(/[^\d.]/g, '');
+    // 确保只有一个小数点
+    const parts = target.value.split('.');
+    if (parts.length > 2) {
+      target.value = parts[0] + '.' + parts.slice(1).join('');
+    }
+    // 限制小数点后最多两位
+    if (parts[1]?.length > 2) {
+      target.value = parts[0] + '.' + parts[1].slice(0, 2);
+    }
+  });
+</script> 

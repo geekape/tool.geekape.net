@@ -1,0 +1,41 @@
+{
+  "categories": [
+    { "id": "all", "name": "所有" },
+    { "id": "image", "name": "图片类" },
+    { "id": "ai", "name": "AI工具" },
+    { "id": "calc", "name": "计算类" },
+    { "id": "text", "name": "文字类" },
+    { "id": "dev", "name": "开发类" },
+    { "id": "design", "name": "设计类" }
+  ],
+  "tools": [
+    {
+      "id": "password-generator",
+      "name": "随机密码生成器",
+      "description": "在线随机密码生成器，支持在线生成随机密码",
+      "icon": "🔒",
+      "category": "calc"
+    },
+    {
+      "id": "gradient-colors",
+      "name": "精选渐变背景色 CSS 代码合集",
+      "description": "精选48种线性渐变色，可作为任何数字艺术作品的内容背景使用，一键复制 CSS 代码。",
+      "icon": "🌈",
+      "category": "design"
+    },
+    {
+      "id": "word-counter",
+      "name": "字数计算",
+      "description": "计算字数，支持中英文",
+      "icon": "📄",
+      "category": "text"
+    },
+    {
+      "id": "number-to-chinese",
+      "name": "数字转中文", 
+      "description": "数字转中文，支持整数、小数",
+      "icon": "🇨🇳",
+      "category": "text"
+    }
+  ]
+} 

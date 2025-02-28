@@ -1,0 +1,114 @@
+---
+import Layout from '../layouts/Layout.astro';
+import toolsData from '../data/tools.json';
+
+const { categories, tools } = toolsData;
+
+// 按分类对工具进行分组
+const toolsByCategory = tools.reduce((acc, tool) => {
+  if (!acc[tool.category]) {
+    acc[tool.category] = [];
+  }
+  acc[tool.category].push(tool);
+  return acc;
+}, {} as Record<string, typeof tools>);
+---
+
+<Layout title="极客猿在线工具箱">
+  <main class="min-h-screen bg-white">
+   
+
+    <div class="container mx-auto px-4 py-6">
+      <!-- 分类标签 -->
+      <div class="flex space-x-4 mb-8 overflow-x-auto pb-2">
+        {categories.map(category => (
+          <button
+            data-category={category.id}
+            class="px-4 py-1.5 rounded-full text-sm whitespace-nowrap
+            hover:bg-gray-100 transition-colors
+            aria-selected:bg-gray-900 aria-selected:text-white"
+            aria-selected={category.id === 'all'}
+          >
+            {category.name}
+          </button>
+        ))}
+      </div>
+
+      <!-- 工具列表 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="toolsList">
+        {tools.map(tool => (
+          <a
+            href={`/${tool.id}`}
+            data-category={tool.category}
+            class="group relative bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+          >
+            <div class="p-4">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-lg">
+                    <span class="text-xl">{tool.icon}</span>
+                  </div>
+                  <h3 class="text-base font-medium text-gray-900">
+                    {tool.name}
+                  </h3>
+                </div>
+                <span class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600">
+                  {tool.category}
+                </span>
+              </div>
+              <p class="text-sm text-gray-500 mb-4">
+                {tool.description}
+              </p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  /* 自定义滚动条样式 */
+  .overflow-x-auto {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+  }
+  .overflow-x-auto::-webkit-scrollbar {
+    height: 6px;
+  }
+  .overflow-x-auto::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .overflow-x-auto::-webkit-scrollbar-thumb {
+    background-color: rgba(156, 163, 175, 0.5);
+    border-radius: 3px;
+  }
+</style>
+
+<script>
+  // 获取所有分类按钮和工具卡片
+  const categoryButtons = document.querySelectorAll('[data-category]');
+  const toolCards = document.querySelectorAll('#toolsList > a');
+
+  // 为每个分类按钮添加点击事件
+  categoryButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const selectedCategory = button.getAttribute('data-category');
+      
+      // 更新按钮选中状态
+      categoryButtons.forEach(btn => {
+        btn.setAttribute('aria-selected', 'false');
+      });
+      button.setAttribute('aria-selected', 'true');
+      
+      // 过滤工具卡片
+      toolCards.forEach(card => {
+        if (selectedCategory === 'all' || card.getAttribute('data-category') === selectedCategory) {
+          (card as HTMLElement).style.display = '';
+        } else {
+          (card as HTMLElement).style.display = 'none';
+        }
+      });
+    });
+  });
+</script>
