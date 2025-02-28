@@ -18,13 +18,13 @@ const toolsByCategory = tools.reduce((acc, tool) => {
   <main class="min-h-screen bg-white">
    
 
-    <div class="container mx-auto px-4 py-6">
+    <div class="container mx-auto px-4 py-4 sm:py-6">
       <!-- 分类标签 -->
-      <div class="flex space-x-4 mb-8 overflow-x-auto pb-2">
+      <div class="flex space-x-3 sm:space-x-4 mb-6 sm:mb-8 overflow-x-auto pb-2">
         {categories.map(category => (
           <button
             data-category={category.id}
-            class="px-4 py-1.5 rounded-full text-sm whitespace-nowrap
+            class="px-3 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm whitespace-nowrap
             hover:bg-gray-100 transition-colors
             aria-selected:bg-gray-900 aria-selected:text-white"
             aria-selected={category.id === 'all'}
@@ -35,20 +35,20 @@ const toolsByCategory = tools.reduce((acc, tool) => {
       </div>
 
       <!-- 工具列表 -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="toolsList">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" id="toolsList">
         {tools.map(tool => (
           <a
             href={`/${tool.id}`}
             data-category={tool.category}
             class="group relative bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
           >
-            <div class="p-4">
-              <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center space-x-3">
-                  <div class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-lg">
-                    <span class="text-xl">{tool.icon}</span>
+            <div class="p-3 sm:p-4">
+              <div class="flex items-center justify-between mb-2 sm:mb-3">
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                  <div class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-gray-100 rounded-lg">
+                    <span class="text-lg sm:text-xl">{tool.icon}</span>
                   </div>
-                  <h3 class="text-base font-medium text-gray-900">
+                  <h3 class="text-sm sm:text-base font-medium text-gray-900">
                     {tool.name}
                   </h3>
                 </div>
@@ -56,7 +56,7 @@ const toolsByCategory = tools.reduce((acc, tool) => {
                   {tool.category}
                 </span>
               </div>
-              <p class="text-sm text-gray-500 mb-4">
+              <p class="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-4">
                 {tool.description}
               </p>
             </div>

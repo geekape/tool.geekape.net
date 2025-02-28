@@ -3,15 +3,15 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="字数统计 - Online Tools">
-  <main class="max-w-4xl mx-auto px-4 py-8">
-    <h1 class="text-2xl font-bold mb-6">字数统计</h1>
+  <main class="max-w-4xl mx-auto px-4 py-4 sm:py-8">
+    <h1 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">字数统计</h1>
     
-    <div class="space-y-6">
+    <div class="space-y-4 sm:space-y-6">
       <!-- 输入区域 -->
       <div class="w-full">
         <textarea
           id="input"
-          class="w-full h-64 p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          class="w-full h-48 sm:h-64 p-3 sm:p-4 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           placeholder="在此输入或粘贴文本..."
         ></textarea>
       </div>
@@ -20,16 +20,16 @@ import Layout from '../layouts/Layout.astro';
       <div class="flex gap-2">
         <button
           id="clearBtn"
-          class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+          class="px-3 sm:px-4 py-1.5 sm:py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
         >
           清空
         </button>
       </div>
 
       <!-- 统计结果 -->
-      <div class="bg-gray-50 rounded-lg p-6">
-        <h2 class="text-lg font-semibold mb-4">统计结果</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="bg-gray-50 rounded-lg p-4 sm:p-6">
+        <h2 class="text-base sm:text-lg font-semibold mb-3 sm:mb-4">统计结果</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm sm:text-base">
           <div class="stat-item">
             <span class="text-gray-600">总字数：</span>
             <span id="totalCount" class="font-medium">0</span>
