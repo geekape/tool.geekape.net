@@ -1,0 +1,434 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="M4A转WAV工具 - 极客猿工具箱">
+  <main class="max-w-4xl mx-auto px-4 py-4 sm:py-8">
+    <div class="space-y-4 sm:space-y-6">
+      <!-- 上传区域 -->
+      <div 
+        id="dropArea" 
+        class="w-full border-2 border-dashed border-gray-300 rounded-lg p-6 sm:p-8 text-center cursor-pointer hover:border-blue-500 transition-colors"
+      >
+        <div class="flex flex-col items-center justify-center space-y-2 sm:space-y-3">
+          <span class="text-3xl sm:text-4xl">🎵</span>
+          <p class="text-sm sm:text-base text-gray-600">
+            点击或拖放M4A音频文件到此处上传
+          </p>
+          <p class="text-xs text-gray-500">支持批量上传多个文件</p>
+          <input 
+            type="file" 
+            id="fileInput" 
+            class="hidden" 
+            accept=".m4a" 
+            multiple
+          />
+          <button
+            id="selectFilesBtn"
+            class="mt-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm transition-colors"
+          >
+            选择文件
+          </button>
+        </div>
+      </div>
+
+      <!-- 转换进度 -->
+      <div id="progressContainer" class="hidden">
+        <div class="w-full bg-gray-200 rounded-full h-2.5">
+          <div id="progressBar" class="bg-blue-500 h-2.5 rounded-full" style="width: 0%"></div>
+        </div>
+        <p class="text-xs text-gray-500 mt-1 text-center">
+          <span id="progressText">0%</span> - 正在处理 <span id="currentFile">0</span>/<span id="totalFiles">0</span>
+        </p>
+      </div>
+
+      <!-- 转换结果 -->
+      <div id="resultContainer" class="hidden space-y-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-base sm:text-lg font-semibold">转换结果</h2>
+          <div class="flex space-x-2">
+            <button
+              id="downloadAllBtn"
+              class="px-3 sm:px-4 py-1.5 sm:py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+              disabled
+            >
+              下载全部
+            </button>
+            <button
+              id="clearAllBtn"
+              class="px-3 sm:px-4 py-1.5 sm:py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+            >
+              清空
+            </button>
+          </div>
+        </div>
+        
+        <div id="audioResults" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <!-- 转换后的音频将在这里显示 -->
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  // DOM元素
+  const dropArea = document.getElementById('dropArea');
+  const fileInput = document.getElementById('fileInput');
+  const selectFilesBtn = document.getElementById('selectFilesBtn');
+  const progressContainer = document.getElementById('progressContainer');
+  const progressBar = document.getElementById('progressBar');
+  const progressText = document.getElementById('progressText');
+  const currentFile = document.getElementById('currentFile');
+  const totalFiles = document.getElementById('totalFiles');
+  const resultContainer = document.getElementById('resultContainer');
+  const audioResults = document.getElementById('audioResults');
+  const downloadAllBtn = document.getElementById('downloadAllBtn');
+  const clearAllBtn = document.getElementById('clearAllBtn');
+
+  // 存储转换后的音频
+  let convertedAudios = [];
+
+  // 点击选择文件按钮
+  selectFilesBtn.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  // 点击上传区域
+  dropArea.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  // 文件选择事件
+  fileInput.addEventListener('change', (e) => {
+    const files = e.target.files;
+    if (files.length > 0) {
+      handleFiles(files);
+    }
+  });
+
+  // 拖放事件
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, preventDefaults, false);
+  });
+
+  function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropArea.addEventListener(eventName, highlight, false);
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, unhighlight, false);
+  });
+
+  function highlight() {
+    dropArea.classList.add('border-blue-500');
+  }
+
+  function unhighlight() {
+    dropArea.classList.remove('border-blue-500');
+  }
+
+  dropArea.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    handleFiles(files);
+  });
+
+  // 处理上传的文件
+  function handleFiles(files) {
+    // 过滤出M4A文件
+    const m4aFiles = Array.from(files).filter(file => 
+      file.type === 'audio/m4a' || file.type === 'audio/x-m4a' || file.name.toLowerCase().endsWith('.m4a')
+    );
+
+    if (m4aFiles.length === 0) {
+      alert('请上传M4A格式的音频文件');
+      return;
+    }
+
+    // 显示进度条
+    progressContainer.classList.remove('hidden');
+    resultContainer.classList.remove('hidden');
+    
+    // 更新进度信息
+    totalFiles.textContent = m4aFiles.length;
+    currentFile.textContent = '0';
+    progressBar.style.width = '0%';
+    progressText.textContent = '0%';
+
+    // 清空之前的结果
+    convertedAudios = [];
+    audioResults.innerHTML = '';
+    downloadAllBtn.disabled = true;
+
+    // 开始转换
+    convertFiles(m4aFiles);
+  }
+
+  // 转换文件
+  async function convertFiles(files) {
+    let processed = 0;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      // 更新当前处理的文件
+      currentFile.textContent = (i + 1).toString();
+      
+      try {
+        // 读取文件
+        const arrayBuffer = await readFileAsArrayBuffer(file);
+        
+        // 转换音频
+        const wavBlob = await convertM4AToWAV(arrayBuffer, file.name);
+        
+        // 添加到结果
+        addAudioToResults(wavBlob, file.name.replace(/\.m4a$/i, '.wav'));
+        
+        // 存储转换后的音频
+        convertedAudios.push({
+          blob: wavBlob,
+          name: file.name.replace(/\.m4a$/i, '.wav')
+        });
+        
+        // 更新进度
+        processed++;
+        const progress = Math.round((processed / files.length) * 100);
+        progressBar.style.width = `${progress}%`;
+        progressText.textContent = `${progress}%`;
+        
+      } catch (error) {
+        console.error('转换失败:', error);
+        alert(`转换失败: ${file.name}`);
+      }
+    }
+
+    // 启用下载全部按钮
+    if (convertedAudios.length > 0) {
+      downloadAllBtn.disabled = false;
+    }
+  }
+
+  // 读取文件为ArrayBuffer
+  function readFileAsArrayBuffer(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  // 将M4A转换为WAV
+  async function convertM4AToWAV(arrayBuffer, fileName) {
+    // 创建音频上下文
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    
+    // 解码音频数据
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    
+    // 创建WAV文件
+    const wavBlob = audioBufferToWAV(audioBuffer);
+    
+    return wavBlob;
+  }
+
+  // 将AudioBuffer转换为WAV Blob
+  function audioBufferToWAV(buffer) {
+    const numChannels = buffer.numberOfChannels;
+    const sampleRate = buffer.sampleRate;
+    const format = 1; // PCM格式
+    const bitDepth = 16; // 16位
+    
+    const bytesPerSample = bitDepth / 8;
+    const blockAlign = numChannels * bytesPerSample;
+    
+    // 计算数据大小
+    const dataLength = buffer.length * numChannels * bytesPerSample;
+    const fileLength = 44 + dataLength; // WAV头部44字节
+    
+    // 创建WAV文件的ArrayBuffer
+    const arrayBuffer = new ArrayBuffer(fileLength);
+    const dataView = new DataView(arrayBuffer);
+    
+    // 写入WAV头部
+    // "RIFF"标识
+    dataView.setUint8(0, 'R'.charCodeAt(0));
+    dataView.setUint8(1, 'I'.charCodeAt(0));
+    dataView.setUint8(2, 'F'.charCodeAt(0));
+    dataView.setUint8(3, 'F'.charCodeAt(0));
+    
+    // 文件长度
+    dataView.setUint32(4, fileLength - 8, true);
+    
+    // "WAVE"标识
+    dataView.setUint8(8, 'W'.charCodeAt(0));
+    dataView.setUint8(9, 'A'.charCodeAt(0));
+    dataView.setUint8(10, 'V'.charCodeAt(0));
+    dataView.setUint8(11, 'E'.charCodeAt(0));
+    
+    // "fmt "子块
+    dataView.setUint8(12, 'f'.charCodeAt(0));
+    dataView.setUint8(13, 'm'.charCodeAt(0));
+    dataView.setUint8(14, 't'.charCodeAt(0));
+    dataView.setUint8(15, ' '.charCodeAt(0));
+    
+    // fmt子块大小
+    dataView.setUint32(16, 16, true);
+    
+    // 音频格式（PCM = 1）
+    dataView.setUint16(20, format, true);
+    
+    // 声道数
+    dataView.setUint16(22, numChannels, true);
+    
+    // 采样率
+    dataView.setUint32(24, sampleRate, true);
+    
+    // 字节率 = 采样率 * 块对齐
+    dataView.setUint32(28, sampleRate * blockAlign, true);
+    
+    // 块对齐 = 声道数 * 每样本字节数
+    dataView.setUint16(32, blockAlign, true);
+    
+    // 每样本位数
+    dataView.setUint16(34, bitDepth, true);
+    
+    // "data"子块
+    dataView.setUint8(36, 'd'.charCodeAt(0));
+    dataView.setUint8(37, 'a'.charCodeAt(0));
+    dataView.setUint8(38, 't'.charCodeAt(0));
+    dataView.setUint8(39, 'a'.charCodeAt(0));
+    
+    // 数据子块大小
+    dataView.setUint32(40, dataLength, true);
+    
+    // 写入音频数据
+    const channelData = [];
+    for (let i = 0; i < numChannels; i++) {
+      channelData.push(buffer.getChannelData(i));
+    }
+    
+    let offset = 44;
+    for (let i = 0; i < buffer.length; i++) {
+      for (let channel = 0; channel < numChannels; channel++) {
+        // 将-1.0 - 1.0的浮点数转换为16位整数
+        const sample = Math.max(-1, Math.min(1, channelData[channel][i]));
+        const value = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+        dataView.setInt16(offset, value, true);
+        offset += 2;
+      }
+    }
+    
+    return new Blob([arrayBuffer], { type: 'audio/wav' });
+  }
+
+  // 添加音频到结果区域
+  function addAudioToResults(blob, fileName) {
+    const url = URL.createObjectURL(blob);
+    
+    const audioCard = document.createElement('div');
+    audioCard.className = 'bg-white p-4 rounded-lg shadow-sm border border-gray-200';
+    
+    const audioElement = document.createElement('audio');
+    audioElement.controls = true;
+    audioElement.className = 'w-full mb-2';
+    audioElement.src = url;
+    
+    const nameElement = document.createElement('p');
+    nameElement.className = 'text-sm text-gray-700 truncate';
+    nameElement.textContent = fileName;
+    
+    const downloadBtn = document.createElement('button');
+    downloadBtn.className = 'mt-2 w-full px-3 py-1 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors';
+    downloadBtn.textContent = '下载';
+    downloadBtn.onclick = () => {
+      downloadAudio(blob, fileName);
+    };
+    
+    audioCard.appendChild(audioElement);
+    audioCard.appendChild(nameElement);
+    audioCard.appendChild(downloadBtn);
+    
+    audioResults.appendChild(audioCard);
+  }
+
+  // 下载单个音频
+  function downloadAudio(blob, fileName) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // 下载全部音频
+  downloadAllBtn.addEventListener('click', async () => {
+    if (convertedAudios.length === 0) return;
+    
+    // 如果只有一个文件，直接下载
+    if (convertedAudios.length === 1) {
+      downloadAudio(convertedAudios[0].blob, convertedAudios[0].name);
+      return;
+    }
+    
+    // 多个文件打包下载
+    try {
+      // 加载JSZip库
+      if (typeof JSZip === 'undefined') {
+        await loadJSZip();
+      }
+      
+      const zip = new JSZip();
+      
+      // 添加文件到zip
+      convertedAudios.forEach(audio => {
+        zip.file(audio.name, audio.blob);
+      });
+      
+      // 生成zip文件
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      
+      // 下载zip
+      const zipName = `m4a_to_wav_${new Date().getTime()}.zip`;
+      downloadAudio(zipBlob, zipName);
+      
+    } catch (error) {
+      console.error('创建ZIP文件失败:', error);
+      alert('创建ZIP文件失败，请尝试单独下载每个文件');
+    }
+  });
+
+  // 加载JSZip库
+  function loadJSZip() {
+    return new Promise((resolve, reject) => {
+      if (typeof JSZip !== 'undefined') {
+        resolve();
+        return;
+      }
+      
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+
+  // 清空所有结果
+  clearAllBtn.addEventListener('click', () => {
+    audioResults.innerHTML = '';
+    convertedAudios = [];
+    downloadAllBtn.disabled = true;
+    progressContainer.classList.add('hidden');
+    resultContainer.classList.add('hidden');
+  });
+</script> 
