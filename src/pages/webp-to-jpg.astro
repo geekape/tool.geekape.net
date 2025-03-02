@@ -1,0 +1,380 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="WebP转JPG工具 - Online Tools">
+  <main class="max-w-4xl mx-auto px-4 py-4 sm:py-8">
+    <h1 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">WebP转JPG工具</h1>
+    
+    <div class="space-y-4 sm:space-y-6">
+      <!-- 上传区域 -->
+      <div 
+        id="dropArea" 
+        class="w-full border-2 border-dashed border-gray-300 rounded-lg p-6 sm:p-8 text-center cursor-pointer hover:border-blue-500 transition-colors"
+      >
+        <div class="flex flex-col items-center justify-center space-y-2 sm:space-y-3">
+          <span class="text-3xl sm:text-4xl">📁</span>
+          <p class="text-sm sm:text-base text-gray-600">
+            点击或拖放WebP图片到此处上传
+          </p>
+          <p class="text-xs text-gray-500">支持批量上传多个文件</p>
+          <input 
+            type="file" 
+            id="fileInput" 
+            class="hidden" 
+            accept=".webp" 
+            multiple
+          />
+          <button
+            id="selectFilesBtn"
+            class="mt-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm transition-colors"
+          >
+            选择文件
+          </button>
+        </div>
+      </div>
+
+      <!-- 转换进度 -->
+      <div id="progressContainer" class="hidden">
+        <div class="w-full bg-gray-200 rounded-full h-2.5">
+          <div id="progressBar" class="bg-blue-500 h-2.5 rounded-full" style="width: 0%"></div>
+        </div>
+        <p class="text-xs text-gray-500 mt-1 text-center">
+          <span id="progressText">0%</span> - 正在处理 <span id="currentFile">0</span>/<span id="totalFiles">0</span>
+        </p>
+      </div>
+
+      <!-- 转换结果 -->
+      <div id="resultContainer" class="hidden space-y-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-base sm:text-lg font-semibold">转换结果</h2>
+          <div class="flex space-x-2">
+            <button
+              id="downloadAllBtn"
+              class="px-3 sm:px-4 py-1.5 sm:py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+              disabled
+            >
+              下载全部
+            </button>
+            <button
+              id="clearAllBtn"
+              class="px-3 sm:px-4 py-1.5 sm:py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+            >
+              清空
+            </button>
+          </div>
+        </div>
+        
+        <div id="imageResults" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+          <!-- 转换后的图片将在这里显示 -->
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  // DOM元素
+  const dropArea = document.getElementById('dropArea');
+  const fileInput = document.getElementById('fileInput');
+  const selectFilesBtn = document.getElementById('selectFilesBtn');
+  const progressContainer = document.getElementById('progressContainer');
+  const progressBar = document.getElementById('progressBar');
+  const progressText = document.getElementById('progressText');
+  const currentFile = document.getElementById('currentFile');
+  const totalFiles = document.getElementById('totalFiles');
+  const resultContainer = document.getElementById('resultContainer');
+  const imageResults = document.getElementById('imageResults');
+  const downloadAllBtn = document.getElementById('downloadAllBtn');
+  const clearAllBtn = document.getElementById('clearAllBtn');
+
+  // 存储转换后的图片
+  let convertedImages = [];
+
+  // 点击选择文件按钮
+  selectFilesBtn.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  // 点击上传区域
+  dropArea.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  // 文件选择事件
+  fileInput.addEventListener('change', (e) => {
+    const files = e.target.files;
+    if (files.length > 0) {
+      handleFiles(files);
+    }
+  });
+
+  // 拖放事件
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, preventDefaults, false);
+  });
+
+  function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropArea.addEventListener(eventName, highlight, false);
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, unhighlight, false);
+  });
+
+  function highlight() {
+    dropArea.classList.add('border-blue-500');
+  }
+
+  function unhighlight() {
+    dropArea.classList.remove('border-blue-500');
+  }
+
+  dropArea.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    handleFiles(files);
+  });
+
+  // 处理上传的文件
+  function handleFiles(files) {
+    // 过滤出WebP文件
+    const webpFiles = Array.from(files).filter(file => 
+      file.type === 'image/webp' || file.name.toLowerCase().endsWith('.webp')
+    );
+
+    if (webpFiles.length === 0) {
+      alert('请上传WebP格式的图片文件');
+      return;
+    }
+
+    // 显示进度条
+    progressContainer.classList.remove('hidden');
+    resultContainer.classList.remove('hidden');
+    
+    // 更新进度信息
+    totalFiles.textContent = webpFiles.length;
+    currentFile.textContent = '0';
+    progressBar.style.width = '0%';
+    progressText.textContent = '0%';
+
+    // 清空之前的结果
+    convertedImages = [];
+    downloadAllBtn.disabled = true;
+
+    // 开始转换
+    convertFiles(webpFiles);
+  }
+
+  // 转换文件
+  async function convertFiles(files) {
+    let processed = 0;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      // 更新当前处理的文件
+      currentFile.textContent = (i + 1).toString();
+      
+      try {
+        // 读取文件
+        const imageUrl = await readFileAsDataURL(file);
+        
+        // 转换图片
+        const jpgBlob = await convertWebpToJpg(imageUrl, file.name);
+        
+        // 添加到结果
+        addImageToResults(jpgBlob, file.name.replace(/\.webp$/i, '.jpg'));
+        
+        // 存储转换后的图片
+        convertedImages.push({
+          blob: jpgBlob,
+          name: file.name.replace(/\.webp$/i, '.jpg')
+        });
+        
+        // 更新进度
+        processed++;
+        const progress = Math.round((processed / files.length) * 100);
+        progressBar.style.width = `${progress}%`;
+        progressText.textContent = `${progress}%`;
+      } catch (error) {
+        console.error('转换失败:', error);
+      }
+    }
+
+    // 启用下载全部按钮
+    if (convertedImages.length > 0) {
+      downloadAllBtn.disabled = false;
+    }
+  }
+
+  // 读取文件为DataURL
+  function readFileAsDataURL(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // 将WebP转换为JPG
+  function convertWebpToJpg(webpUrl, fileName) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        // 创建canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        
+        // 绘制图片
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        
+        // 转换为JPG
+        canvas.toBlob(blob => {
+          resolve(blob);
+        }, 'image/jpeg', 0.9);
+      };
+      img.onerror = () => {
+        reject(new Error(`无法加载图片: ${fileName}`));
+      };
+      img.src = webpUrl;
+    });
+  }
+
+  // 添加图片到结果区域
+  function addImageToResults(blob, fileName) {
+    const url = URL.createObjectURL(blob);
+    
+    const imageCard = document.createElement('div');
+    imageCard.className = 'bg-white border border-gray-200 rounded-lg overflow-hidden';
+    
+    const imageContainer = document.createElement('div');
+    imageContainer.className = 'aspect-square overflow-hidden';
+    
+    const img = document.createElement('img');
+    img.src = url;
+    img.className = 'w-full h-full object-cover';
+    img.alt = fileName;
+    
+    const infoContainer = document.createElement('div');
+    infoContainer.className = 'p-2 text-xs';
+    
+    const nameElement = document.createElement('p');
+    nameElement.className = 'truncate text-gray-700';
+    nameElement.textContent = fileName;
+    
+    const downloadBtn = document.createElement('button');
+    downloadBtn.className = 'mt-1 w-full px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-xs transition-colors';
+    downloadBtn.textContent = '下载';
+    downloadBtn.onclick = () => downloadImage(blob, fileName);
+    
+    infoContainer.appendChild(nameElement);
+    infoContainer.appendChild(downloadBtn);
+    imageContainer.appendChild(img);
+    imageCard.appendChild(imageContainer);
+    imageCard.appendChild(infoContainer);
+    
+    imageResults.appendChild(imageCard);
+  }
+
+  // 下载单个图片
+  function downloadImage(blob, fileName) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // 下载所有图片
+  downloadAllBtn.addEventListener('click', async () => {
+    if (convertedImages.length === 0) return;
+    
+    if (convertedImages.length === 1) {
+      // 如果只有一个图片，直接下载
+      downloadImage(convertedImages[0].blob, convertedImages[0].name);
+    } else {
+      // 如果有多个图片，创建一个ZIP文件
+      try {
+        // 动态加载JSZip库
+        if (typeof window.JSZip === 'undefined') {
+          const script = document.createElement('script');
+          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+          document.head.appendChild(script);
+          
+          await new Promise((resolve, reject) => {
+            script.onload = resolve;
+            script.onerror = reject;
+          });
+        }
+        
+        // 使用全局JSZip对象
+        const JSZip = window.JSZip || globalThis.JSZip;
+        const zip = new JSZip();
+        
+        // 添加所有图片到ZIP
+        convertedImages.forEach(img => {
+          zip.file(img.name, img.blob);
+        });
+        
+        // 生成ZIP文件
+        const zipBlob = await zip.generateAsync({type: 'blob'});
+        
+        // 下载ZIP文件
+        const url = URL.createObjectURL(zipBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'webp-to-jpg.zip';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('创建ZIP文件失败:', error);
+        alert('批量下载失败，请尝试单个下载');
+      }
+    }
+  });
+
+  // 清空所有结果
+  clearAllBtn.addEventListener('click', () => {
+    imageResults.innerHTML = '';
+    convertedImages = [];
+    downloadAllBtn.disabled = true;
+    progressContainer.classList.add('hidden');
+    
+    // 如果结果为空，隐藏结果容器
+    if (imageResults.children.length === 0) {
+      resultContainer.classList.add('hidden');
+    }
+  });
+</script>
+
+<style>
+  /* 自定义滚动条样式 */
+  #imageResults {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+  }
+  #imageResults::-webkit-scrollbar {
+    width: 6px;
+  }
+  #imageResults::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  #imageResults::-webkit-scrollbar-thumb {
+    background-color: rgba(156, 163, 175, 0.5);
+    border-radius: 3px;
+  }
+</style> 

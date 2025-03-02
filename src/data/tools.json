@@ -10,6 +10,13 @@
   ],
   "tools": [
     {
+      "id": "webp-to-jpg",
+      "name": "WebP转JPG工具",
+      "description": "在线将WebP图片转换为JPG格式，支持拖放上传、批量处理和下载转换后的图片",
+      "icon": "🖼️",
+      "category": "image"
+    },
+    {
       "id": "password-generator",
       "name": "随机密码生成器",
       "description": "在线随机密码生成器，支持在线生成随机密码",
