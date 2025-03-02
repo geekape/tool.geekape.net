@@ -1,11 +1,9 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from '../../layouts/Layout.astro';
 ---
 
-<Layout title="WebP转JPG工具 - Online Tools">
+<Layout title="WebP转JPG工具 - 极客猿工具箱">
   <main class="max-w-4xl mx-auto px-4 py-4 sm:py-8">
-    <h1 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">WebP转JPG工具</h1>
-    
     <div class="space-y-4 sm:space-y-6">
       <!-- 上传区域 -->
       <div 
@@ -74,6 +72,7 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
+  // @ts-nocheck
   // DOM元素
   const dropArea = document.getElementById('dropArea');
   const fileInput = document.getElementById('fileInput');

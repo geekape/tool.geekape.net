@@ -1,8 +1,8 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from '../../layouts/Layout.astro';
 ---
 
-<Layout title="贪吃蛇游戏 - 极客猿在线工具箱">
+<Layout title="贪吃蛇游戏 - 极客猿工具箱">
   <main class="max-w-4xl mx-auto px-4 py-4 sm:py-8">
     
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -144,6 +144,7 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
+  // @ts-nocheck
   document.addEventListener('DOMContentLoaded', () => {
     // 获取游戏元素
     const canvas = document.getElementById('gameCanvas');

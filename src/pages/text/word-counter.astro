@@ -1,8 +1,8 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from '../../layouts/Layout.astro';
 ---
 
-<Layout title="字数统计 - Online Tools">
+<Layout title="字数统计 - 极客猿工具箱">
   <main class="max-w-4xl mx-auto px-4 py-4 sm:py-8">
     
     <div class="space-y-4 sm:space-y-6">
@@ -60,6 +60,7 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
+  // @ts-nocheck
   const input = document.getElementById('input') as HTMLTextAreaElement;
   const clearBtn = document.getElementById('clearBtn');
   

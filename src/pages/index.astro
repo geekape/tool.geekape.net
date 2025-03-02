@@ -14,7 +14,7 @@ const toolsByCategory = tools.reduce((acc, tool) => {
 }, {} as Record<string, typeof tools>);
 ---
 
-<Layout title="极客猿在线工具箱">
+<Layout title="极客猿工具箱">
   <main class="min-h-screen bg-white">
    
 
@@ -38,7 +38,7 @@ const toolsByCategory = tools.reduce((acc, tool) => {
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" id="toolsList">
         {tools.map(tool => (
           <a
-            href={`/${tool.id}`}
+            href={`/${tool.category}/${tool.id}`}
             data-category={tool.category}
             class="group relative bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
           >

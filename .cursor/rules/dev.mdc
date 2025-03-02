@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
 ## 项目背景
 
 这是一个使用Astro框架构建的在线工具箱的网站，主要用于收集一些常用的在线工具，方便大家使用。
