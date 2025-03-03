@@ -1,0 +1,181 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="抛硬币工具 - 极客猿工具箱">
+  <main class="max-w-4xl mx-auto px-4 py-4 sm:py-8">
+    <div class="flex flex-col items-center justify-center space-y-8">
+      <!-- 标题和说明 -->
+      <div class="text-center">
+        <h1 class="text-2xl sm:text-3xl font-bold mb-2">抛硬币工具</h1>
+        <p class="text-gray-600 max-w-lg mx-auto">
+          想要快速做决定？试试在线抛硬币工具吧！简单、快速、无需下载，只需点击按钮，就能随机生成"正面"或"反面"的结果。
+        </p>
+      </div>
+
+      <!-- 硬币容器 -->
+      <div class="relative w-64 h-64 perspective-1000">
+        <div id="coin" class="w-full h-full relative preserve-3d transition-transform duration-1000">
+          <!-- 正面 -->
+          <div id="heads" class="absolute w-full h-full rounded-full bg-yellow-400 flex items-center justify-center backface-hidden shadow-lg border-4 border-yellow-500">
+            <div class="text-center">
+              <div class="text-4xl font-bold text-yellow-700">正面</div>
+            </div>
+          </div>
+          
+          <!-- 反面 -->
+          <div id="tails" class="absolute w-full h-full rounded-full bg-yellow-300 flex items-center justify-center backface-hidden shadow-lg border-4 border-yellow-500 rotateY-180">
+            <div class="text-center">
+              <div class="text-4xl font-bold text-yellow-700">反面</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 结果显示 -->
+      <div id="result" class="text-xl sm:text-2xl font-bold text-center h-10">
+        点击下方按钮开始抛硬币
+      </div>
+
+      <!-- 控制按钮 -->
+      <div class="flex flex-col sm:flex-row gap-4">
+        <button id="flipBtn" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-base sm:text-lg font-medium">
+          抛硬币
+        </button>
+        
+        <!-- 统计信息 -->
+        <div class="flex gap-4">
+          <div class="text-center px-4 py-2 bg-gray-100 rounded-lg">
+            <div class="text-sm text-gray-600">正面</div>
+            <div id="headsCount" class="font-bold">0</div>
+          </div>
+          <div class="text-center px-4 py-2 bg-gray-100 rounded-lg">
+            <div class="text-sm text-gray-600">反面</div>
+            <div id="tailsCount" class="font-bold">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 重置按钮 -->
+      <button id="resetBtn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors text-sm">
+        重置统计
+      </button>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+  
+  .rotateY-180 {
+    transform: rotateY(180deg);
+  }
+  
+  #coin {
+    transform: rotateX(0);
+    transform-style: preserve-3d;
+  }
+  
+  #coin.heads {
+    animation: flipHeads 3s ease-out forwards;
+  }
+  
+  #coin.tails {
+    animation: flipTails 3s ease-out forwards;
+  }
+  
+  @keyframes flipHeads {
+    0% { transform: rotateX(0); }
+    100% { transform: rotateX(1800deg); }
+  }
+  
+  @keyframes flipTails {
+    0% { transform: rotateX(0); }
+    100% { transform: rotateX(1980deg); }
+  }
+</style>
+
+<script>
+  // 统计数据
+  let stats = {
+    heads: 0,
+    tails: 0
+  };
+
+  // 获取DOM元素
+  const coin = document.getElementById('coin');
+  const resultElement = document.getElementById('result');
+  const flipBtn = document.getElementById('flipBtn') as HTMLButtonElement;
+  const resetBtn = document.getElementById('resetBtn');
+  const headsCount = document.getElementById('headsCount');
+  const tailsCount = document.getElementById('tailsCount');
+
+  // 更新统计显示
+  const updateStats = () => {
+    if (headsCount) headsCount.textContent = stats.heads.toString();
+    if (tailsCount) tailsCount.textContent = stats.tails.toString();
+  };
+
+  // 抛硬币函数
+  const flipCoin = () => {
+    // 禁用按钮，防止动画期间重复点击
+    if (flipBtn) flipBtn.disabled = true;
+    
+    // 重置硬币状态
+    if (coin) {
+      coin.classList.remove('heads', 'tails');
+      void coin.offsetWidth; // 触发重绘
+      
+      // 随机结果
+      const random = Math.random();
+      const flipResult = random < 0.5 ? 'heads' : 'tails';
+      
+      // 添加动画类
+      coin.classList.add(flipResult);
+      
+      // 更新统计
+      if (flipResult === 'heads') {
+        stats.heads++;
+      } else {
+        stats.tails++;
+      }
+      
+      // 动画结束后更新结果和统计
+      setTimeout(() => {
+        if (resultElement) {
+          if (flipResult === 'heads') {
+            resultElement.textContent = '结果：正面！';
+          } else {
+            resultElement.textContent = '结果：反面！';
+          }
+        }
+        updateStats();
+        if (flipBtn) flipBtn.disabled = false;
+      }, 3000);
+    }
+  };
+
+  // 重置统计
+  const resetStats = () => {
+    stats.heads = 0;
+    stats.tails = 0;
+    updateStats();
+    if (resultElement) resultElement.textContent = '点击下方按钮开始抛硬币';
+  };
+
+  // 添加事件监听
+  document.addEventListener('DOMContentLoaded', () => {
+    if (flipBtn) flipBtn.addEventListener('click', flipCoin);
+    if (resetBtn) resetBtn.addEventListener('click', resetStats);
+  });
+</script> 

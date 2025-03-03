@@ -12,6 +12,13 @@
   ],
   "tools": [
     {
+      "id": "coin-flip",
+      "name": "抛硬币工具",
+      "description": "想要快速做决定？试试在线抛硬币工具吧！简单、快速、无需下载，只需点击按钮，就能随机生成\"正面\"或\"反面\"的结果。",
+      "icon": "🪙",
+      "category": "game"
+    },
+    {
       "id": "webp-to-jpg",
       "name": "WebP转JPG工具",
       "description": "在线将WebP图片转换为JPG格式，支持拖放上传、批量处理和下载转换后的图片",
