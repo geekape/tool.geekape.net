@@ -1,0 +1,816 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="文件重命名工具 - 极客猿工具箱">
+  <main class="max-w-4xl mx-auto px-4 py-4 sm:py-8">
+    <div class="mb-6">
+      <h1 class="text-2xl sm:text-3xl font-bold mb-2">文件重命名工具</h1>
+      <p class="text-gray-600">批量文件重命名工具，支持多种重命名方式</p>
+    </div>
+
+    <div class="space-y-6">
+      <!-- 文件选择区域 -->
+      <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
+        <div class="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 text-center" id="dropZone">
+          <div class="mb-4">
+            <span class="text-4xl">📁</span>
+          </div>
+          <p class="mb-4 text-gray-600">拖放文件或文件夹到这里，或点击选择文件</p>
+          <div class="flex space-x-4">
+            <button id="selectFiles" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors">
+              选择文件
+            </button>
+            <button id="selectFolder" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors">
+              选择文件夹
+            </button>
+          </div>
+          <!-- 隐藏的文件输入元素 -->
+          <input type="file" id="fileInput" multiple style="display: none;" />
+          <input type="file" id="folderInput" webkitdirectory directory multiple style="display: none;" />
+        </div>
+      </div>
+
+      <!-- 扩展名修改选项 -->
+      <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
+        <h2 class="text-lg sm:text-xl font-semibold mb-4">扩展名修改选项</h2>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <div class="flex-1">
+            <label for="newExtension" class="block text-sm font-medium text-gray-700 mb-1">修改扩展名</label>
+            <input
+              type="text"
+              id="newExtension"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="输入新扩展名（不含点号）"
+            />
+          </div>
+          <div class="flex-1">
+            <label for="extensionCase" class="block text-sm font-medium text-gray-700 mb-1">扩展名大小写</label>
+            <select
+              id="extensionCase"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="noChange">不改变</option>
+              <option value="uppercase">转为大写</option>
+              <option value="lowercase">转为小写</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 文件名修改选项 -->
+      <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
+        <h2 class="text-lg sm:text-xl font-semibold mb-4">文件名修改选项</h2>
+        
+        <div class="mb-4">
+          <label for="newFilename" class="block text-sm font-medium text-gray-700 mb-1">新文件名：</label>
+          <input
+            type="text"
+            id="newFilename"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="输入新文件名（留空则保持原文件名）"
+          />
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label for="filenameCase" class="block text-sm font-medium text-gray-700 mb-1">文件名大小写</label>
+            <select
+              id="filenameCase"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="noChange">不改变</option>
+              <option value="uppercase">转为大写</option>
+              <option value="lowercase">转为小写</option>
+              <option value="capitalize">首字母大写</option>
+            </select>
+          </div>
+          
+          <div>
+            <label for="addNumber" class="block text-sm font-medium text-gray-700 mb-1">添加序号</label>
+            <div class="flex gap-2">
+              <select
+                id="numberPosition"
+                class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="none">不添加</option>
+                <option value="prefix">前缀</option>
+                <option value="suffix">后缀</option>
+              </select>
+              <input
+                type="number"
+                id="startNumber"
+                class="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="起始值"
+                value="1"
+                min="0"
+              />
+            </div>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="addTime" class="block text-sm font-medium text-gray-700 mb-1">添加时间戳</label>
+            <select
+              id="timePosition"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="none">不添加</option>
+              <option value="prefix">前缀</option>
+              <option value="suffix">后缀</option>
+            </select>
+          </div>
+          
+          <div>
+            <label for="timeFormat" class="block text-sm font-medium text-gray-700 mb-1">时间格式</label>
+            <select
+              id="timeFormat"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="yyyyMMdd">年月日 (yyyyMMdd)</option>
+              <option value="yyyyMMddHHmm">年月日时分 (yyyyMMddHHmm)</option>
+              <option value="yyyyMMddHHmmss">年月日时分秒 (yyyyMMddHHmmss)</option>
+              <option value="HHmmss">时分秒 (HHmmss)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 排序选项 -->
+      <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
+        <h2 class="text-lg sm:text-xl font-semibold mb-4">排序选项</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="inline-flex items-center">
+              <input type="radio" name="sortOrder" value="natural" class="form-radio" checked>
+              <span class="ml-2">自然排序</span>
+            </label>
+          </div>
+          <div>
+            <label class="inline-flex items-center">
+              <input type="radio" name="sortOrder" value="nameAsc" class="form-radio">
+              <span class="ml-2">文件名顺序</span>
+            </label>
+          </div>
+          <div>
+            <label class="inline-flex items-center">
+              <input type="radio" name="sortOrder" value="nameDesc" class="form-radio">
+              <span class="ml-2">文件名逆序</span>
+            </label>
+          </div>
+          <div>
+            <label class="inline-flex items-center">
+              <input type="radio" name="sortOrder" value="timeAsc" class="form-radio">
+              <span class="ml-2">修改时间顺序</span>
+            </label>
+          </div>
+          <div>
+            <label class="inline-flex items-center">
+              <input type="radio" name="sortOrder" value="timeDesc" class="form-radio">
+              <span class="ml-2">修改时间逆序</span>
+            </label>
+          </div>
+          <div>
+            <label class="inline-flex items-center">
+              <input type="radio" name="sortOrder" value="random" class="form-radio">
+              <span class="ml-2">随机排序</span>
+            </label>
+          </div>
+          <div>
+            <label class="inline-flex items-center">
+              <input type="radio" name="sortOrder" value="reverse" class="form-radio">
+              <span class="ml-2">反转当前排序</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- 文件列表 -->
+      <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg sm:text-xl font-semibold">文件列表</h2>
+          <button id="previewBtn" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors" disabled>
+            预览重命名
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  原文件名
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  新文件名
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  状态
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  操作
+                </th>
+              </tr>
+            </thead>
+            <tbody id="fileList" class="bg-white divide-y divide-gray-200">
+              <!-- 文件列表将通过 JavaScript 动态生成 -->
+              <tr>
+                <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                  请选择文件或文件夹
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="flex justify-end space-x-4">
+        <button id="resetBtn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition-colors">
+          重置
+        </button>
+        <button id="downloadBtn" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors" disabled>
+          打包下载
+        </button>
+        <button id="renameBtn" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors" disabled>
+          执行重命名
+        </button>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<!-- 引入 JSZip 库 -->
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+<script is:inline>
+  // 在页面加载完成后执行
+  document.addEventListener('DOMContentLoaded', function() {
+    // 定义文件类型接口
+    // 文件列表
+    let files = [];
+    let previewNames = [];
+    let currentSortOrder = 'natural'; // 当前排序方式
+    
+    // DOM 元素
+    const selectFilesBtn = document.getElementById('selectFiles');
+    const selectFolderBtn = document.getElementById('selectFolder');
+    const fileListEl = document.getElementById('fileList');
+    const previewBtn = document.getElementById('previewBtn');
+    const renameBtn = document.getElementById('renameBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const dropZone = document.getElementById('dropZone');
+    const sortRadios = document.querySelectorAll('input[name="sortOrder"]');
+    const fileInput = document.getElementById('fileInput');
+    const folderInput = document.getElementById('folderInput');
+    
+    // 文件选择处理
+    if (selectFilesBtn) {
+      selectFilesBtn.addEventListener('click', () => {
+        console.log('选择文件按钮被点击');
+        // 触发文件选择对话框
+        if (fileInput) {
+          fileInput.click();
+        } else {
+          // 如果文件输入元素不存在，则使用模拟数据
+          simulateFileSelection();
+        }
+      });
+    }
+    
+    if (selectFolderBtn) {
+      selectFolderBtn.addEventListener('click', () => {
+        console.log('选择文件夹按钮被点击');
+        // 触发文件夹选择对话框
+        if (folderInput) {
+          folderInput.click();
+        } else {
+          // 如果文件夹输入元素不存在，则使用模拟数据
+          simulateFileSelection();
+        }
+      });
+    }
+    
+    // 文件输入元素变化处理
+    if (fileInput) {
+      fileInput.addEventListener('change', (e) => {
+        console.log('文件输入变化');
+        handleFileSelection(e.target.files);
+      });
+    }
+    
+    // 文件夹输入元素变化处理
+    if (folderInput) {
+      folderInput.addEventListener('change', (e) => {
+        console.log('文件夹输入变化');
+        handleFileSelection(e.target.files);
+      });
+    }
+    
+    // 处理文件选择
+    function handleFileSelection(fileList) {
+      if (!fileList || fileList.length === 0) {
+        console.log('没有选择文件');
+        return;
+      }
+      
+      console.log('选择了', fileList.length, '个文件');
+      
+      // 清空现有文件列表
+      files = [];
+      
+      // 处理选择的文件
+      Array.from(fileList).forEach(file => {
+        const fileName = file.name;
+        const lastDotIndex = fileName.lastIndexOf('.');
+        const ext = lastDotIndex > 0 ? fileName.substring(lastDotIndex + 1) : '';
+        const name = fileName;
+        
+        files.push({
+          name: name,
+          ext: ext,
+          path: URL.createObjectURL(file),
+          originalFile: file,  // 保存原始文件对象，用于下载
+          lastModified: new Date(file.lastModified)
+        });
+      });
+      
+      // 应用当前排序
+      sortFiles();
+      
+      // 更新文件列表
+      updateFileList();
+      if (previewBtn) previewBtn.disabled = false;
+    }
+    
+    // 预览按钮
+    if (previewBtn) {
+      previewBtn.addEventListener('click', () => {
+        console.log('预览按钮被点击');
+        previewRename();
+      });
+    }
+    
+    // 重命名按钮
+    if (renameBtn) {
+      renameBtn.addEventListener('click', () => {
+        console.log('重命名按钮被点击');
+        executeRename();
+      });
+    }
+    
+    // 重置按钮
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        console.log('重置按钮被点击');
+        resetForm();
+      });
+    }
+    
+    // 下载按钮
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', () => {
+        console.log('下载按钮被点击');
+        packAndDownload();
+      });
+    }
+    
+    // 排序选项处理
+    if (sortRadios && sortRadios.length > 0) {
+      sortRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+          const sortValue = e.target.value;
+          console.log('排序方式改变为:', sortValue);
+          currentSortOrder = sortValue;
+          sortFiles();
+          updateFileList();
+        });
+      });
+    }
+    
+    // 排序文件
+    function sortFiles() {
+      if (files.length <= 1) return; // 无需排序
+      
+      console.log('执行文件排序，方式:', currentSortOrder);
+      
+      switch (currentSortOrder) {
+        case 'natural':
+          // 自然排序，保持原样
+          break;
+          
+        case 'nameAsc':
+          // 文件名顺序
+          files.sort((a, b) => a.name.localeCompare(b.name));
+          break;
+          
+        case 'nameDesc':
+          // 文件名逆序
+          files.sort((a, b) => b.name.localeCompare(a.name));
+          break;
+          
+        case 'timeAsc':
+          // 修改时间顺序
+          files.sort((a, b) => a.lastModified.getTime() - b.lastModified.getTime());
+          break;
+          
+        case 'timeDesc':
+          // 修改时间逆序
+          files.sort((a, b) => b.lastModified.getTime() - a.lastModified.getTime());
+          break;
+          
+        case 'random':
+          // 随机排序
+          files.sort(() => Math.random() - 0.5);
+          break;
+          
+        case 'reverse':
+          // 反转当前排序
+          files.reverse();
+          break;
+      }
+      
+      // 如果有预览名称，也需要相应调整
+      if (previewNames.length > 0) {
+        // 创建一个临时数组来存储排序后的预览名称
+        const tempPreviewNames = [];
+        files.forEach((file, index) => {
+          // 查找原始文件在排序前的索引
+          const originalIndex = files.findIndex(f => f === file);
+          // 如果找到对应的预览名称，则添加到临时数组
+          if (originalIndex >= 0 && originalIndex < previewNames.length) {
+            tempPreviewNames.push(previewNames[originalIndex]);
+          } else {
+            tempPreviewNames.push('');
+          }
+        });
+        previewNames = tempPreviewNames;
+      }
+    }
+    
+    // 预览重命名
+    function previewRename() {
+      console.log('预览重命名');
+      // 获取各个选项的值
+      const newExtElement = document.getElementById('newExtension');
+      const extCaseElement = document.getElementById('extensionCase');
+      const newFilenameElement = document.getElementById('newFilename');
+      const filenameCaseElement = document.getElementById('filenameCase');
+      const numberPositionElement = document.getElementById('numberPosition');
+      const startNumberElement = document.getElementById('startNumber');
+      const timePositionElement = document.getElementById('timePosition');
+      const timeFormatElement = document.getElementById('timeFormat');
+      
+      const newExt = newExtElement ? newExtElement.value : '';
+      const extCase = extCaseElement ? extCaseElement.value : 'noChange';
+      const newFilename = newFilenameElement ? newFilenameElement.value : '';
+      const filenameCase = filenameCaseElement ? filenameCaseElement.value : 'noChange';
+      const numberPosition = numberPositionElement ? numberPositionElement.value : 'none';
+      const startNumber = startNumberElement ? (parseInt(startNumberElement.value) || 1) : 1;
+      const timePosition = timePositionElement ? timePositionElement.value : 'none';
+      const timeFormat = timeFormatElement ? timeFormatElement.value : 'yyyyMMdd';
+      
+      // 生成预览名称
+      previewNames = files.map((file, index) => {
+        // 分离文件名和扩展名
+        let filename = file.name.substring(0, file.name.lastIndexOf('.'));
+        let ext = file.name.substring(file.name.lastIndexOf('.') + 1);
+        
+        // 处理新文件名
+        if (newFilename) {
+          filename = newFilename;
+        }
+        
+        // 处理文件名大小写
+        if (filenameCase === 'uppercase') {
+          filename = filename.toUpperCase();
+        } else if (filenameCase === 'lowercase') {
+          filename = filename.toLowerCase();
+        } else if (filenameCase === 'capitalize') {
+          filename = filename.charAt(0).toUpperCase() + filename.slice(1);
+        }
+        
+        // 处理序号
+        if (numberPosition === 'prefix') {
+          const num = (startNumber + index).toString().padStart(2, '0');
+          filename = `${num}_${filename}`;
+        } else if (numberPosition === 'suffix') {
+          const num = (startNumber + index).toString().padStart(2, '0');
+          filename = `${filename}_${num}`;
+        }
+        
+        // 处理时间戳
+        if (timePosition !== 'none') {
+          const now = new Date();
+          let timeStr = '';
+          
+          if (timeFormat === 'yyyyMMdd') {
+            timeStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+          } else if (timeFormat === 'yyyyMMddHHmm') {
+            timeStr = now.toISOString().slice(0, 16).replace(/-/g, '').replace('T', '').replace(':', '');
+          } else if (timeFormat === 'yyyyMMddHHmmss') {
+            timeStr = now.toISOString().slice(0, 19).replace(/-/g, '').replace('T', '').replace(/:/g, '');
+          } else if (timeFormat === 'HHmmss') {
+            timeStr = now.toISOString().slice(11, 19).replace(/:/g, '');
+          }
+          
+          if (timePosition === 'prefix') {
+            filename = `${timeStr}_${filename}`;
+          } else if (timePosition === 'suffix') {
+            filename = `${filename}_${timeStr}`;
+          }
+        }
+        
+        // 处理扩展名
+        if (newExt) {
+          ext = newExt;
+        }
+        
+        // 处理扩展名大小写
+        if (extCase === 'uppercase') {
+          ext = ext.toUpperCase();
+        } else if (extCase === 'lowercase') {
+          ext = ext.toLowerCase();
+        }
+        
+        return `${filename}.${ext}`;
+      });
+      
+      updateFileList();
+      if (previewBtn) previewBtn.disabled = false;
+      if (downloadBtn) downloadBtn.disabled = true;
+    }
+    
+    // 执行重命名
+    function executeRename() {
+      console.log('执行重命名');
+      // 在实际环境中，这里会执行实际的文件重命名操作
+      // 由于浏览器限制，这里只是模拟操作
+      alert('已应用重命名结果，您可以点击"打包下载"下载所有文件，或点击单个文件的下载按钮下载单个文件。');
+      
+      // 更新文件名
+      files.forEach((file, index) => {
+        if (previewNames[index]) {
+          file.name = previewNames[index];
+        }
+      });
+      
+      // 重置预览
+      previewNames = [];
+      updateFileList();
+      if (renameBtn) renameBtn.disabled = true;
+      if (downloadBtn) downloadBtn.disabled = false;
+    }
+    
+    // 重置表单
+    function resetForm() {
+      console.log('重置表单');
+      const newExtElement = document.getElementById('newExtension');
+      const extCaseElement = document.getElementById('extensionCase');
+      const newFilenameElement = document.getElementById('newFilename');
+      const filenameCaseElement = document.getElementById('filenameCase');
+      const numberPositionElement = document.getElementById('numberPosition');
+      const startNumberElement = document.getElementById('startNumber');
+      const timePositionElement = document.getElementById('timePosition');
+      const timeFormatElement = document.getElementById('timeFormat');
+      
+      if (newExtElement) newExtElement.value = '';
+      if (extCaseElement) extCaseElement.value = 'noChange';
+      if (newFilenameElement) newFilenameElement.value = '';
+      if (filenameCaseElement) filenameCaseElement.value = 'noChange';
+      if (numberPositionElement) numberPositionElement.value = 'none';
+      if (startNumberElement) startNumberElement.value = '1';
+      if (timePositionElement) timePositionElement.value = 'none';
+      if (timeFormatElement) timeFormatElement.value = 'yyyyMMdd';
+      
+      // 重置排序
+      if (sortRadios && sortRadios.length > 0) {
+        sortRadios.forEach(radio => {
+          if (radio.value === 'natural') {
+            radio.checked = true;
+          } else {
+            radio.checked = false;
+          }
+        });
+        currentSortOrder = 'natural';
+      }
+      
+      // 重置预览
+      previewNames = [];
+      updateFileList();
+      if (renameBtn) renameBtn.disabled = true;
+      if (downloadBtn) downloadBtn.disabled = true;
+    }
+    
+    // 拖放文件处理
+    if (dropZone) {
+      console.log('设置拖放区域事件');
+      
+      dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        console.log('文件拖动到区域上方');
+        dropZone.classList.add('border-blue-500');
+      });
+      
+      dropZone.addEventListener('dragleave', () => {
+        console.log('文件离开拖放区域');
+        dropZone.classList.remove('border-blue-500');
+      });
+      
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        console.log('文件被拖放到区域中');
+        dropZone.classList.remove('border-blue-500');
+        
+        // 处理拖放的文件
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          handleFileSelection(e.dataTransfer.files);
+        } else {
+          // 如果没有文件，则使用模拟数据
+          simulateFileSelection();
+        }
+      });
+    }
+    
+    // 模拟文件选择
+    function simulateFileSelection() {
+      console.log('模拟文件选择');
+      // 模拟一些示例文件
+      files = [
+        { name: 'document.pdf', ext: 'pdf', path: '/path/to/document.pdf', lastModified: new Date(2023, 0, 15) },
+        { name: 'image.jpg', ext: 'jpg', path: '/path/to/image.jpg', lastModified: new Date(2023, 1, 20) },
+        { name: 'spreadsheet.xlsx', ext: 'xlsx', path: '/path/to/spreadsheet.xlsx', lastModified: new Date(2023, 2, 10) },
+        { name: 'presentation.pptx', ext: 'pptx', path: '/path/to/presentation.pptx', lastModified: new Date(2023, 3, 5) },
+        { name: 'notes.txt', ext: 'txt', path: '/path/to/notes.txt', lastModified: new Date(2023, 4, 25) }
+      ];
+      
+      // 应用当前排序
+      sortFiles();
+      
+      updateFileList();
+      if (previewBtn) previewBtn.disabled = false;
+    }
+    
+    // 更新文件列表
+    function updateFileList() {
+      console.log('更新文件列表');
+      if (!fileListEl) return;
+      
+      if (files.length === 0) {
+        fileListEl.innerHTML = `
+          <tr>
+            <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+              请选择文件或文件夹
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      let html = '';
+      files.forEach((file, index) => {
+        const newName = previewNames[index] || file.name;
+        html += `
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <span class="text-sm font-medium text-gray-900">${file.name}</span>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <span class="text-sm font-medium ${previewNames[index] ? 'text-green-600' : 'text-gray-400'}">${newName}</span>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${previewNames[index] ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                ${previewNames[index] ? '已预览' : '未修改'}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <button 
+                class="text-blue-600 hover:text-blue-900 focus:outline-none"
+                data-index="${index}"
+              >
+                下载
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      
+      fileListEl.innerHTML = html;
+      
+      // 为每个下载按钮添加事件监听器
+      document.querySelectorAll('.download-file-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const index = parseInt(e.currentTarget.getAttribute('data-index') || '0');
+          downloadSingleFile(index);
+        });
+      });
+    }
+    
+    // 打包并下载文件
+    async function packAndDownload() {
+      console.log('打包并下载文件');
+      
+      if (files.length === 0) {
+        alert('没有可下载的文件');
+        return;
+      }
+      
+      // 显示加载提示
+      if (downloadBtn) {
+        downloadBtn.textContent = '打包中...';
+        downloadBtn.disabled = true;
+      }
+      
+      try {
+        // 创建一个新的 JSZip 实例
+        const zip = new JSZip();
+        
+        // 确定使用哪些文件名（原始名称或预览名称）
+        // 如果已执行重命名，则使用当前文件名
+        // 如果只是预览，则使用预览名称
+        
+        // 添加文件到 zip
+        const promises = [];
+        
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const fileName = file.name;
+          
+          // 如果是通过文件输入选择的文件，我们可以直接获取文件内容
+          if (file.originalFile) {
+            zip.file(fileName, file.originalFile);
+          } else {
+            // 对于模拟文件，我们创建一个简单的文本内容
+            const content = `这是文件 ${fileName} 的模拟内容。在实际应用中，这里会包含真实的文件内容。`;
+            zip.file(fileName, content);
+          }
+        }
+        
+        // 生成 zip 文件
+        const zipContent = await zip.generateAsync({ type: 'blob' });
+        
+        // 使用 FileSaver 保存 zip 文件
+        saveAs(zipContent, '重命名文件.zip');
+        
+        console.log('文件打包下载成功');
+      } catch (error) {
+        console.error('打包下载出错:', error);
+        alert('打包下载出错: ' + error.message);
+      } finally {
+        // 恢复按钮状态
+        if (downloadBtn) {
+          downloadBtn.textContent = '打包下载';
+          downloadBtn.disabled = false;
+        }
+      }
+    }
+    
+    // 下载单个文件
+    function downloadSingleFile(index) {
+      console.log('下载单个文件', index);
+      
+      if (index < 0 || index >= files.length) {
+        console.error('文件索引无效');
+        return;
+      }
+      
+      const file = files[index];
+      
+      try {
+        if (file.originalFile) {
+          // 如果有原始文件对象，使用它创建一个 Blob
+          const blob = new Blob([file.originalFile], { type: file.originalFile.type });
+          saveAs(blob, file.name);
+        } else if (file.path && file.path.startsWith('blob:')) {
+          // 如果有 blob URL，直接使用它
+          fetch(file.path)
+            .then(response => response.blob())
+            .then(blob => saveAs(blob, file.name))
+            .catch(error => {
+              console.error('下载文件出错:', error);
+              alert('下载文件出错: ' + error.message);
+            });
+        } else {
+          // 对于模拟文件，创建一个简单的文本内容
+          const content = `这是文件 ${file.name} 的模拟内容。在实际应用中，这里会包含真实的文件内容。`;
+          const blob = new Blob([content], { type: 'text/plain' });
+          saveAs(blob, file.name);
+        }
+        
+        console.log('文件下载成功');
+      } catch (error) {
+        console.error('下载文件出错:', error);
+        alert('下载文件出错: ' + error.message);
+      }
+    }
+    
+    // 初始化页面
+    console.log('文件重命名工具初始化完成');
+  });
+</script> 

@@ -53,7 +53,13 @@
       "icon": "🇨🇳",
       "category": "text"
     },
-   
+    {
+      "id": "file-renamer",
+      "name": "文件重命名工具",
+      "description": "批量文件重命名工具，支持多种重命名方式，如修改扩展名、转换大小写、添加序号、时间重命名等",
+      "icon": "📝",
+      "category": "text"
+    },
     {
       "id": "snake-game",
       "name": "贪吃蛇游戏",
