@@ -1,0 +1,315 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="CSS工具 - 极客猿工具箱">
+  <main class="max-w-4xl mx-auto px-4 py-4 sm:py-8">
+    <div class="space-y-4 sm:space-y-6">
+      <h1 class="text-xl sm:text-2xl font-bold">CSS在线工具</h1>
+      
+      <!-- 输入区域 -->
+      <div class="w-full">
+        <textarea
+          id="input"
+          class="w-full h-48 sm:h-64 p-3 sm:p-4 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="在此输入或粘贴CSS代码..."
+        ></textarea>
+      </div>
+
+      <!-- 按钮区域 -->
+      <div class="flex flex-wrap gap-2">
+        <button
+          id="beautifyBtn"
+          class="px-3 sm:px-4 py-1.5 sm:py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+        >
+          美化(Beautify)
+        </button>
+        <button
+          id="compressBtn"
+          class="px-3 sm:px-4 py-1.5 sm:py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+        >
+          压缩(Compress)
+        </button>
+        <button
+          id="clearBtn"
+          class="px-3 sm:px-4 py-1.5 sm:py-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+        >
+          清除缩进(Clear)
+        </button>
+        <button
+          id="inlineCssBtn"
+          class="px-3 sm:px-4 py-1.5 sm:py-2 text-sm bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors"
+        >
+          内联CSS(InlineCSS)
+        </button>
+        <button
+          id="downloadBtn"
+          class="px-3 sm:px-4 py-1.5 sm:py-2 text-sm bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors"
+        >
+          下载(Download)
+        </button>
+      </div>
+
+    </div>
+  </main>
+</Layout>
+
+<!-- 引入highlight.js的样式和脚本 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/css.min.js"></script>
+
+<script>
+  // @ts-nocheck
+  // 引入外部库
+  function loadScript(url) {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = url;
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+
+  // 加载所需的库
+  Promise.all([
+    loadScript('https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-css.min.js'),
+  ]).then(() => {
+    // 获取DOM元素
+    const input = document.getElementById('input');
+    const beautifyBtn = document.getElementById('beautifyBtn');
+    const compressBtn = document.getElementById('compressBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const inlineCssBtn = document.getElementById('inlineCssBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const historyContainer = document.getElementById('history');
+
+    // 创建代码高亮预览区域
+    const previewContainer = document.createElement('div');
+    previewContainer.className = 'mt-4 border border-gray-300 rounded-lg overflow-hidden';
+    previewContainer.style.display = 'none';
+    
+    const previewHeader = document.createElement('div');
+    previewHeader.className = 'flex items-center justify-between bg-gray-100 px-3 py-2 border-b border-gray-300';
+    
+    const previewTitle = document.createElement('span');
+    previewTitle.className = 'text-sm font-medium';
+    previewTitle.textContent = '代码预览';
+    
+    const closePreviewBtn = document.createElement('button');
+    closePreviewBtn.className = 'text-gray-500 hover:text-gray-700';
+    closePreviewBtn.innerHTML = '&times;';
+    closePreviewBtn.addEventListener('click', () => {
+      previewContainer.style.display = 'none';
+    });
+    
+    previewHeader.appendChild(previewTitle);
+    previewHeader.appendChild(closePreviewBtn);
+    
+    const previewContent = document.createElement('pre');
+    previewContent.className = 'p-3 m-0 text-sm overflow-auto max-h-64';
+    
+    const previewCode = document.createElement('code');
+    previewCode.className = 'language-css';
+    
+    previewContent.appendChild(previewCode);
+    previewContainer.appendChild(previewHeader);
+    previewContainer.appendChild(previewContent);
+    
+    // 将预览区域添加到输入区域后面
+    input.parentNode.insertBefore(previewContainer, input.nextSibling);
+
+    // 更新预览
+    function updatePreview() {
+      const css = input.value;
+      if (!css.trim()) {
+        previewContainer.style.display = 'none';
+        return;
+      }
+      
+      previewCode.textContent = css;
+      hljs.highlightElement(previewCode);
+      previewContainer.style.display = 'block';
+    }
+
+    // 监听输入变化
+    input.addEventListener('input', updatePreview);
+
+    // 历史记录
+    const history = [];
+    const MAX_HISTORY = 5;
+
+    // 美化CSS
+    beautifyBtn?.addEventListener('click', () => {
+      try {
+        const css = input.value;
+        if (!css.trim()) return;
+        
+        // @ts-ignore
+        const beautified = css_beautify(css, {
+          indent_size: 2,
+          indent_char: ' ',
+          max_preserve_newlines: 1,
+          preserve_newlines: true,
+          end_with_newline: false,
+          wrap_line_length: 0,
+          indent_empty_lines: false
+        });
+        
+        addToHistory('美化', css);
+        input.value = beautified;
+        updatePreview();
+      } catch (error) {
+        alert('美化CSS失败: ' + error.message);
+      }
+    });
+
+    // 压缩CSS
+    compressBtn?.addEventListener('click', () => {
+      try {
+        const css = input.value;
+        if (!css.trim()) return;
+        
+        const compressed = css
+          .replace(/\/\*[\s\S]*?\*\//g, '') // 移除注释
+          .replace(/\s+/g, ' ') // 将多个空格替换为一个
+          .replace(/\s*([{}:;,])\s*/g, '$1') // 移除选择器、属性和值周围的空格
+          .replace(/;}/g, '}') // 移除最后一个分号
+          .trim();
+        
+        addToHistory('压缩', css);
+        input.value = compressed;
+        updatePreview();
+      } catch (error) {
+        alert('压缩CSS失败: ' + error.message);
+      }
+    });
+
+    // 清除缩进
+    clearBtn?.addEventListener('click', () => {
+      try {
+        const css = input.value;
+        if (!css.trim()) return;
+        
+        const cleared = css
+          .replace(/^\s+/gm, '')
+          .replace(/\t/g, '')
+          .replace(/\n{2,}/g, '\n');
+        
+        addToHistory('清除缩进', css);
+        input.value = cleared;
+        updatePreview();
+      } catch (error) {
+        alert('清除缩进失败: ' + error.message);
+      }
+    });
+
+    // 内联CSS
+    inlineCssBtn?.addEventListener('click', () => {
+      try {
+        const css = input.value;
+        if (!css.trim()) return;
+        
+        // 简单的内联CSS转换
+        const inlined = css
+          .replace(/\s*\{/g, '{')
+          .replace(/\}\s*/g, '}')
+          .replace(/\s*;\s*/g, ';')
+          .replace(/\s*:\s*/g, ':')
+          .replace(/[\r\n]/g, '');
+        
+        addToHistory('内联CSS', css);
+        input.value = inlined;
+        updatePreview();
+      } catch (error) {
+        alert('内联CSS失败: ' + error.message);
+      }
+    });
+
+    // 下载CSS文件
+    downloadBtn?.addEventListener('click', () => {
+      try {
+        const css = input.value;
+        if (!css.trim()) return;
+        
+        const blob = new Blob([css], { type: 'text/css' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'download.css';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        alert('下载CSS失败: ' + error.message);
+      }
+    });
+
+    // 添加到历史记录
+    function addToHistory(action, content) {
+      const timestamp = new Date().toLocaleTimeString();
+      history.unshift({ action, timestamp, content });
+      
+      // 限制历史记录数量
+      if (history.length > MAX_HISTORY) {
+        history.splice(MAX_HISTORY);
+      }
+      
+      updateHistoryUI();
+    }
+
+    // 更新历史记录UI
+    function updateHistoryUI() {
+      if (!historyContainer) return;
+      
+      historyContainer.innerHTML = '';
+      
+      history.forEach((item) => {
+        const historyItem = document.createElement('div');
+        historyItem.className = 'flex items-center justify-between p-2 border-b border-gray-200';
+        
+        const info = document.createElement('div');
+        info.className = 'flex items-center space-x-2';
+        
+        const actionSpan = document.createElement('span');
+        actionSpan.className = 'text-xs px-2 py-1 rounded bg-blue-100 text-blue-800';
+        actionSpan.textContent = item.action;
+        
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'text-xs text-gray-500';
+        timeSpan.textContent = item.timestamp;
+        
+        const restoreBtn = document.createElement('button');
+        restoreBtn.className = 'text-xs px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded transition-colors';
+        restoreBtn.textContent = '恢复';
+        restoreBtn.addEventListener('click', () => {
+          if (input) {
+            input.value = item.content;
+            updatePreview();
+          }
+        });
+        
+        info.appendChild(actionSpan);
+        info.appendChild(timeSpan);
+        historyItem.appendChild(info);
+        historyItem.appendChild(restoreBtn);
+        historyContainer.appendChild(historyItem);
+      });
+      
+      if (history.length === 0) {
+        const emptyMessage = document.createElement('div');
+        emptyMessage.className = 'text-sm text-gray-500';
+        emptyMessage.textContent = '暂无历史记录';
+        historyContainer.appendChild(emptyMessage);
+      }
+    }
+
+    // 初始化历史记录UI
+    updateHistoryUI();
+  }).catch(error => {
+    console.error('加载库失败:', error);
+    alert('加载必要的库失败，请检查网络连接并刷新页面');
+  });
+</script> 

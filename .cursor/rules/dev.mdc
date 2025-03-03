@@ -15,6 +15,7 @@ alwaysApply: false
 4. 尽量不使用React，vue之类的前端框架
 5. 页面ui风格要求统一，尽量简洁
 6. 不要使用typescript
+7. 不修复页面类型错误，统一加上 // @ts-nocheck
 
 ## 项目结构
 
